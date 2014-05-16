@@ -12,6 +12,6 @@ The program targets an input image. The input image is split into four quadrants
 
 ![Starry Night](http://i.imgur.com/PWgfLaW.png)
 
-![Apple](http://i.imgur.com/eahob4M.png)
+![Apple](http://i.imgur.com/z89aiMc.png)
 
 ![Butterfly](http://i.imgur.com/ujiZTwx.png)
