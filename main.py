@@ -1,8 +1,13 @@
 from PIL import Image, ImageDraw
 import heapq
-import random
-import struct
-import zlib
+import sys
+
+ITERATIONS = 1024
+LEAF_SIZE = 4
+SHOW_GRID = True
+GRID_COLOR = (0, 0, 0)
+SAVE_FRAMES = False
+ERROR_RATE = 0.5
 
 def weighted_average(hist):
     count = sum(i * x for i, x in enumerate(hist))
@@ -35,14 +40,13 @@ class Quad(object):
         self.color = color_from_histogram(hist)
         self.error = error(hist, self.color)
         self.leaf = self.is_leaf()
-        self.children = []
-    @property
-    def area(self):
-        l, t, r, b = self.box
-        return (r - l) * (b - t)
+        self.area = self.compute_area()
     def is_leaf(self):
         l, t, r, b = self.box
-        return int(r - l <= 1 or b - t <= 1)
+        return int(r - l <= LEAF_SIZE or b - t <= LEAF_SIZE)
+    def compute_area(self):
+        l, t, r, b = self.box
+        return (r - l) * (b - t)
     def split(self):
         l, t, r, b = self.box
         lr = l + (r - l) / 2
@@ -52,34 +56,21 @@ class Quad(object):
         tr = Quad(self.model, (lr, t, r, tb), depth)
         bl = Quad(self.model, (l, tb, lr, b), depth)
         br = Quad(self.model, (lr, tb, r, b), depth)
-        self.children = [tl, tr, bl, br]
-        return self.children
-    def serialize(self):
-        result = []
-        if self.children:
-            result.append(struct.pack('<B', 0))
-            for child in self.children:
-                result.append(child.serialize())
-        else:
-            result.append(struct.pack('<B', 1))
-            result.append(struct.pack('<BBB', *self.color))
-        return ''.join(result)
+        return (tl, tr, bl, br)
 
 class Model(object):
     def __init__(self, path):
         self.im = Image.open(path).convert('RGB')
         self.width, self.height = self.im.size
         self.quads = []
-        self.root = Quad(self, (0, 0, self.width, self.height), 0)
-        self.error_numerator = self.root.error * self.root.area
-        self.error_denominator = self.root.area
-        self.push(self.root)
+        quad = Quad(self, (0, 0, self.width, self.height), 0)
+        self.error_numerator = quad.error * quad.area
+        self.error_denominator = quad.area
+        self.push(quad)
     def total_error(self):
         return self.error_numerator / self.error_denominator
     def push(self, quad):
         score = -quad.error * (quad.area ** 0.125)
-        # score = random.random()
-        # score = -quad.error + (random.random() - 0.5) * 8
         heapq.heappush(self.quads, (quad.leaf, score, quad))
     def pop(self):
         return heapq.heappop(self.quads)
@@ -91,27 +82,29 @@ class Model(object):
             self.push(child)
             self.error_numerator += child.error * child.area
     def render(self, path):
-        im = Image.new('RGB', (self.width + 1, self.height + 1))
+        dx, dy = (1, 1) if SHOW_GRID else (0, 0)
+        im = Image.new('RGB', (self.width + dx, self.height + dy))
         draw = ImageDraw.Draw(im)
-        draw.rectangle((0, 0, self.width, self.height), (0, 0, 0))
+        draw.rectangle((0, 0, self.width, self.height), GRID_COLOR)
         for leaf, score, quad in self.quads:
             l, t, r, b = quad.box
-            draw.rectangle((l + 1, t + 1, r - 1, b - 1), quad.color)
+            draw.rectangle((l + dx, t + dy, r - 1, b - 1), quad.color)
         del draw
         im.save(path, 'PNG')
-    def serialize(self):
-        result = self.root.serialize()
-        result = zlib.compress(result)
-        return result
 
 def main():
-    model = Model('fractal.jpg')
+    args = sys.argv[1:]
+    if len(args) != 1:
+        print 'Usage: python main.py input_image'
+        return
+    model = Model(args[0])
     previous = None
-    for i in range(2048):
+    for i in range(ITERATIONS):
         error = model.total_error()
-        if previous is None or previous - error > 1:
+        if previous is None or previous - error > ERROR_RATE:
             print i, error
-            # model.render('frames/%06d.png' % i)
+            if SAVE_FRAMES:
+                model.render('frames/%06d.png' % i)
             previous = error
         model.split()
     model.render('output.png')
