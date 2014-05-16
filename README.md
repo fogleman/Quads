@@ -17,3 +17,5 @@ The program targets an input image. The input image is split into four quadrants
 ![Butterfly](http://i.imgur.com/ujiZTwx.png)
 
 ![Lenna](http://i.imgur.com/4uqseF0.png)
+
+![Landscape](http://i.imgur.com/mBQAXFp.png)
