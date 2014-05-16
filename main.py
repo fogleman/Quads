@@ -91,12 +91,12 @@ class Model(object):
             self.push(child)
             self.error_numerator += child.error * child.area
     def render(self, path):
-        im = Image.new('RGB', (self.width, self.height))
+        im = Image.new('RGB', (self.width + 1, self.height + 1))
         draw = ImageDraw.Draw(im)
         draw.rectangle((0, 0, self.width, self.height), (0, 0, 0))
         for leaf, score, quad in self.quads:
             l, t, r, b = quad.box
-            draw.rectangle((l, t, r - 2, b - 2), quad.color)
+            draw.rectangle((l + 1, t + 1, r - 1, b - 1), quad.color)
         del draw
         im.save(path, 'PNG')
     def serialize(self):
@@ -105,13 +105,13 @@ class Model(object):
         return result
 
 def main():
-    model = Model('starry.png')
+    model = Model('fractal.jpg')
     previous = None
-    for i in range(8192):
+    for i in range(2048):
         error = model.total_error()
         if previous is None or previous - error > 1:
             print i, error
-            model.render('frames/%06d.png' % i)
+            # model.render('frames/%06d.png' % i)
             previous = error
         model.split()
     model.render('output.png')
