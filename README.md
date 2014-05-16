@@ -21,3 +21,5 @@ The program targets an input image. The input image is split into four quadrants
 ![Landscape](http://i.imgur.com/mBQAXFp.png)
 
 ![Earth](http://i.imgur.com/5xeoJws.png)
+
+![Fractal](http://i.imgur.com/WJmHRcV.png)
