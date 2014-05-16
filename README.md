@@ -6,7 +6,7 @@ The program targets an input image. The input image is split into four quadrants
 
 ### Animation
 
-![Animation](http://i.imgur.com/ObuGJfF.gif)
+![Animation](http://i.imgur.com/UE2eOkx.gif)
 
 ### Samples
 
