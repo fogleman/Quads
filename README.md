@@ -6,10 +6,12 @@ The program targets an input image. The input image is split into four quadrants
 
 ### Animation
 
-![Sample](http://i.imgur.com/ObuGJfF.gif)
+![Animation](http://i.imgur.com/ObuGJfF.gif)
 
 ### Samples
 
-![Sample](http://i.imgur.com/PWgfLaW.png)
+![Starry Night](http://i.imgur.com/PWgfLaW.png)
 
 ![Apple](http://i.imgur.com/eahob4M.png)
+
+![Butterfly](http://i.imgur.com/x438RWU.png)
