@@ -15,3 +15,5 @@ The program targets an input image. The input image is split into four quadrants
 ![Apple](http://i.imgur.com/z89aiMc.png)
 
 ![Butterfly](http://i.imgur.com/ujiZTwx.png)
+
+![Lenna](http://i.imgur.com/4uqseF0.png)
