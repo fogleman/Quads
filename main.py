@@ -32,10 +32,9 @@ def error(hist, color):
     return r * 0.2989 + g * 0.5870 + b * 0.1140
 
 class Quad(object):
-    def __init__(self, model, box, depth):
+    def __init__(self, model, box):
         self.model = model
         self.box = box
-        self.depth = depth
         hist = self.model.im.crop(self.box).histogram()
         self.color = color_from_histogram(hist)
         self.error = error(hist, self.color)
@@ -51,11 +50,10 @@ class Quad(object):
         l, t, r, b = self.box
         lr = l + (r - l) / 2
         tb = t + (b - t) / 2
-        depth = self.depth + 1
-        tl = Quad(self.model, (l, t, lr, tb), depth)
-        tr = Quad(self.model, (lr, t, r, tb), depth)
-        bl = Quad(self.model, (l, tb, lr, b), depth)
-        br = Quad(self.model, (lr, tb, r, b), depth)
+        tl = Quad(self.model, (l, t, lr, tb))
+        tr = Quad(self.model, (lr, t, r, tb))
+        bl = Quad(self.model, (l, tb, lr, b))
+        br = Quad(self.model, (lr, tb, r, b))
         return (tl, tr, bl, br)
 
 class Model(object):
@@ -63,7 +61,7 @@ class Model(object):
         self.im = Image.open(path).convert('RGB')
         self.width, self.height = self.im.size
         self.quads = []
-        quad = Quad(self, (0, 0, self.width, self.height), 0)
+        quad = Quad(self, (0, 0, self.width, self.height))
         self.error_numerator = quad.error * quad.area
         self.error_denominator = quad.area
         self.push(quad)
