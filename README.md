@@ -14,7 +14,7 @@ The program targets an input image. The input image is split into four quadrants
 
 ![Flower](http://i.imgur.com/RomAaw7.png)
 
-![Apple](http://i.imgur.com/z89aiMc.png)
+![Apple](http://i.imgur.com/IiPaYO7.png)
 
 ![Butterfly](http://i.imgur.com/ujiZTwx.png)
 
