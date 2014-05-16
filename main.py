@@ -71,9 +71,9 @@ class Model(object):
         self.width, self.height = self.im.size
         self.quads = []
         self.root = Quad(self, (0, 0, self.width, self.height), 0)
-        self.push(self.root)
         self.error_numerator = self.root.error * self.root.area
         self.error_denominator = self.root.area
+        self.push(self.root)
     def total_error(self):
         return self.error_numerator / self.error_denominator
     def push(self, quad):
@@ -93,9 +93,10 @@ class Model(object):
     def render(self, path):
         im = Image.new('RGB', (self.width, self.height))
         draw = ImageDraw.Draw(im)
+        draw.rectangle((0, 0, self.width, self.height), (0, 0, 0))
         for leaf, score, quad in self.quads:
             l, t, r, b = quad.box
-            draw.rectangle((l, t, r - 1, b - 1), quad.color)
+            draw.rectangle((l, t, r - 2, b - 2), quad.color)
         del draw
         im.save(path, 'PNG')
     def serialize(self):
@@ -104,7 +105,7 @@ class Model(object):
         return result
 
 def main():
-    model = Model('butterfly.jpg')
+    model = Model('starry.png')
     previous = None
     for i in range(8192):
         error = model.total_error()
