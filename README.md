@@ -2,8 +2,6 @@
 
 Computer art based on quad-trees.
 
-The program targets an input image. The 2D image is split into quads and
-assigned an average color in each quad. The quad with the largest error
-is split into its four children to refine the image.
+The program targets an input image. The input image is split into four quadrants. Each quadrant is assigned an averaged color based on the colors in the input image. The quad with the largest error is split into its four children quadrants to refine the image. This process is repeated N times.
 
 ![Sample](http://i.imgur.com/FINkz9F.gif)
