@@ -8,6 +8,7 @@ SHOW_GRID = True
 GRID_COLOR = (0, 0, 0)
 SAVE_FRAMES = False
 ERROR_RATE = 0.5
+SCALE = 1
 
 def weighted_average(hist):
     count = sum(i * x for i, x in enumerate(hist))
@@ -80,13 +81,15 @@ class Model(object):
             self.push(child)
             self.error_numerator += child.error * child.area
     def render(self, path):
+        m = SCALE
         dx, dy = (1, 1) if SHOW_GRID else (0, 0)
-        im = Image.new('RGB', (self.width + dx, self.height + dy))
+        im = Image.new('RGB', (self.width * m + dx, self.height * m + dy))
         draw = ImageDraw.Draw(im)
         draw.rectangle((0, 0, self.width, self.height), GRID_COLOR)
         for leaf, score, quad in self.quads:
             l, t, r, b = quad.box
-            draw.rectangle((l + dx, t + dy, r - 1, b - 1), quad.color)
+            box = (l * m + dx, t * m + dy, r * m - 1, b * m - 1)
+            draw.rectangle(box, quad.color)
         del draw
         im.save(path, 'PNG')
 
