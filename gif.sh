@@ -1,1 +1,1 @@
-convert -delay 20 -loop 0 frames/*.png output.gif
+convert -loop 0 -delay 20 frames/*.png -delay 200 output.png output.gif
