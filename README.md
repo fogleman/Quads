@@ -10,7 +10,7 @@ The program targets an input image. The input image is split into four quadrants
 
 ### Samples
 
-![Starry Night](http://i.imgur.com/PWgfLaW.png)
+![Starry Night](http://i.imgur.com/yLNet30.png)
 
 ![Apple](http://i.imgur.com/z89aiMc.png)
 
