@@ -8,37 +8,29 @@ SHOW_GRID = True
 GRID_COLOR = (0, 0, 0)
 SAVE_FRAMES = False
 ERROR_RATE = 0.5
+AREA_POWER = 0.25
 SCALE = 1
 
 def weighted_average(hist):
-    count = sum(i * x for i, x in enumerate(hist))
     total = sum(hist)
-    return count / total
+    value = sum(i * x for i, x in enumerate(hist)) / total
+    error = sum(x * (value - i) ** 2 for i, x in enumerate(hist)) / total
+    error = error ** 0.5
+    return value, error
 
 def color_from_histogram(hist):
-    r = weighted_average(hist[:256])
-    g = weighted_average(hist[256:512])
-    b = weighted_average(hist[512:768])
-    return (r, g, b)
-
-def component_error(hist, value):
-    count = sum(x * (value - i) ** 2 for i, x in enumerate(hist))
-    total = sum(hist)
-    return (count / total) ** 0.5
-
-def error(hist, color):
-    r = component_error(hist[:256], color[0])
-    g = component_error(hist[256:512], color[1])
-    b = component_error(hist[512:768], color[2])
-    return r * 0.2989 + g * 0.5870 + b * 0.1140
+    r, re = weighted_average(hist[:256])
+    g, ge = weighted_average(hist[256:512])
+    b, be = weighted_average(hist[512:768])
+    e = re * 0.2989 + ge * 0.5870 + be * 0.1140
+    return (r, g, b), e
 
 class Quad(object):
     def __init__(self, model, box):
         self.model = model
         self.box = box
         hist = self.model.im.crop(self.box).histogram()
-        self.color = color_from_histogram(hist)
-        self.error = error(hist, self.color)
+        self.color, self.error = color_from_histogram(hist)
         self.leaf = self.is_leaf()
         self.area = self.compute_area()
     def is_leaf(self):
@@ -63,23 +55,22 @@ class Model(object):
         self.width, self.height = self.im.size
         self.quads = []
         quad = Quad(self, (0, 0, self.width, self.height))
-        self.error_numerator = quad.error * quad.area
-        self.error_denominator = quad.area
+        self.error_sum = quad.error * quad.area
         self.push(quad)
-    def total_error(self):
-        return self.error_numerator / self.error_denominator
+    def average_error(self):
+        return self.error_sum / (self.width * self.height)
     def push(self, quad):
-        score = -quad.error * (quad.area ** 0.125)
+        score = -quad.error * (quad.area ** AREA_POWER)
         heapq.heappush(self.quads, (quad.leaf, score, quad))
     def pop(self):
         return heapq.heappop(self.quads)
     def split(self):
         leaf, score, quad = self.pop()
-        self.error_numerator -= quad.error * quad.area
+        self.error_sum -= quad.error * quad.area
         children = quad.split()
         for child in children:
             self.push(child)
-            self.error_numerator += child.error * child.area
+            self.error_sum += child.error * child.area
     def render(self, path):
         m = SCALE
         dx, dy = (1, 1) if SHOW_GRID else (0, 0)
@@ -101,7 +92,7 @@ def main():
     model = Model(args[0])
     previous = None
     for i in range(ITERATIONS):
-        error = model.total_error()
+        error = model.average_error()
         if previous is None or previous - error > ERROR_RATE:
             print i, error
             if SAVE_FRAMES:
