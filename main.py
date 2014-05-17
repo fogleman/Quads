@@ -2,6 +2,11 @@ from PIL import Image, ImageDraw
 import heapq
 import sys
 
+MODE_RECTANGLE = 1
+MODE_ELLIPSE = 2
+MODE_ROUNDED_RECTANGLE = 3
+
+MODE = MODE_RECTANGLE
 ITERATIONS = 1024
 LEAF_SIZE = 4
 SHOW_GRID = True
@@ -9,7 +14,6 @@ GRID_COLOR = (0, 0, 0)
 SAVE_FRAMES = False
 ERROR_RATE = 0.5
 AREA_POWER = 0.25
-ELLIPSE = False
 SCALE = 1
 
 def weighted_average(hist):
@@ -25,6 +29,17 @@ def color_from_histogram(hist):
     b, be = weighted_average(hist[512:768])
     e = re * 0.2989 + ge * 0.5870 + be * 0.1140
     return (r, g, b), e
+
+def rounded_rectangle(draw, box, radius, color):
+    l, t, r, b = box
+    x = radius * 2
+    z = radius
+    draw.ellipse((l, t, l + x, t + x), color)
+    draw.ellipse((r - x, t, r, t + x), color)
+    draw.ellipse((l, b - x, l + x, b), color)
+    draw.ellipse((r - x, b - x, r, b), color)
+    draw.rectangle((l, t + z, r, b - z), color)
+    draw.rectangle((l + z, t, r - z, b), color)
 
 class Quad(object):
     def __init__(self, model, box):
@@ -81,8 +96,11 @@ class Model(object):
         for leaf, score, quad in self.quads:
             l, t, r, b = quad.box
             box = (l * m + dx, t * m + dy, r * m - 1, b * m - 1)
-            if ELLIPSE:
+            if MODE == MODE_ELLIPSE:
                 draw.ellipse(box, quad.color)
+            elif MODE == MODE_ROUNDED_RECTANGLE:
+                radius = (r - l) / 4
+                rounded_rectangle(draw, box, radius, quad.color)
             else:
                 draw.rectangle(box, quad.color)
         del draw
