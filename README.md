@@ -12,9 +12,11 @@ The program targets an input image. The input image is split into four quadrants
 
 ![Flower](http://i.imgur.com/RomAaw7.png)
 
+![Flower](http://i.imgur.com/kjosmto.png)
+
 ![Apple](http://i.imgur.com/IiPaYO7.png)
 
-![Apple with Circles](http://i.imgur.com/ZB83zVM.png)
+![Apple](http://i.imgur.com/ZB83zVM.png)
 
 ![Butterfly](http://i.imgur.com/ujiZTwx.png)
 
