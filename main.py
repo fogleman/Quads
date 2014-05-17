@@ -14,7 +14,7 @@ FILL_COLOR = (0, 0, 0)
 SAVE_FRAMES = False
 ERROR_RATE = 0.5
 AREA_POWER = 0.25
-SCALE = 1
+OUTPUT_SCALE = 1
 
 def weighted_average(hist):
     total = sum(hist)
@@ -88,7 +88,7 @@ class Model(object):
             self.push(child)
             self.error_sum += child.error * child.area
     def render(self, path):
-        m = SCALE
+        m = OUTPUT_SCALE
         dx, dy = (PADDING, PADDING)
         im = Image.new('RGB', (self.width * m + dx, self.height * m + dy))
         draw = ImageDraw.Draw(im)
@@ -99,7 +99,7 @@ class Model(object):
             if MODE == MODE_ELLIPSE:
                 draw.ellipse(box, quad.color)
             elif MODE == MODE_ROUNDED_RECTANGLE:
-                radius = (r - l) / 4
+                radius = m * LEAF_SIZE / 2
                 rounded_rectangle(draw, box, radius, quad.color)
             else:
                 draw.rectangle(box, quad.color)
