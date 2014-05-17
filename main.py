@@ -9,6 +9,7 @@ GRID_COLOR = (0, 0, 0)
 SAVE_FRAMES = False
 ERROR_RATE = 0.5
 AREA_POWER = 0.25
+ELLIPSE = False
 SCALE = 1
 
 def weighted_average(hist):
@@ -76,11 +77,14 @@ class Model(object):
         dx, dy = (1, 1) if SHOW_GRID else (0, 0)
         im = Image.new('RGB', (self.width * m + dx, self.height * m + dy))
         draw = ImageDraw.Draw(im)
-        draw.rectangle((0, 0, self.width, self.height), GRID_COLOR)
+        draw.rectangle((0, 0, self.width * m, self.height * m), GRID_COLOR)
         for leaf, score, quad in self.quads:
             l, t, r, b = quad.box
             box = (l * m + dx, t * m + dy, r * m - 1, b * m - 1)
-            draw.rectangle(box, quad.color)
+            if ELLIPSE:
+                draw.ellipse(box, quad.color)
+            else:
+                draw.rectangle(box, quad.color)
         del draw
         im.save(path, 'PNG')
 
