@@ -9,8 +9,8 @@ MODE_ROUNDED_RECTANGLE = 3
 MODE = MODE_RECTANGLE
 ITERATIONS = 1024
 LEAF_SIZE = 4
-SHOW_GRID = True
-GRID_COLOR = (0, 0, 0)
+PADDING = 1
+FILL_COLOR = (0, 0, 0)
 SAVE_FRAMES = False
 ERROR_RATE = 0.5
 AREA_POWER = 0.25
@@ -89,10 +89,10 @@ class Model(object):
             self.error_sum += child.error * child.area
     def render(self, path):
         m = SCALE
-        dx, dy = (1, 1) if SHOW_GRID else (0, 0)
+        dx, dy = (PADDING, PADDING)
         im = Image.new('RGB', (self.width * m + dx, self.height * m + dy))
         draw = ImageDraw.Draw(im)
-        draw.rectangle((0, 0, self.width * m, self.height * m), GRID_COLOR)
+        draw.rectangle((0, 0, self.width * m, self.height * m), FILL_COLOR)
         for leaf, score, quad in self.quads:
             l, t, r, b = quad.box
             box = (l * m + dx, t * m + dy, r * m - 1, b * m - 1)
