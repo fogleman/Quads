@@ -10,11 +10,13 @@ The program targets an input image. The input image is split into four quadrants
 
 ### Samples
 
-![Starry Night](http://i.imgur.com/yLNet30.png)
-
 ![Flower](http://i.imgur.com/RomAaw7.png)
 
+![Flower](http://i.imgur.com/kjosmto.png)
+
 ![Apple](http://i.imgur.com/IiPaYO7.png)
+
+![Apple](http://i.imgur.com/ZB83zVM.png)
 
 ![Butterfly](http://i.imgur.com/ujiZTwx.png)
 
@@ -22,7 +24,7 @@ The program targets an input image. The input image is split into four quadrants
 
 ![Landscape](http://i.imgur.com/mBQAXFp.png)
 
-![Earth](http://i.imgur.com/5xeoJws.png)
+![Zebra](http://i.imgur.com/iwyUHFR.png)
 
 ![Fractal](http://i.imgur.com/WJmHRcV.png)
 
