@@ -99,7 +99,7 @@ class Model(object):
             if MODE == MODE_ELLIPSE:
                 draw.ellipse(box, quad.color)
             elif MODE == MODE_ROUNDED_RECTANGLE:
-                radius = m * (LEAF_SIZE - PADDING) / 2 - 1
+                radius = m * min((r - l), (b - t)) / 4
                 rounded_rectangle(draw, box, radius, quad.color)
             else:
                 draw.rectangle(box, quad.color)
