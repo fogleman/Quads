@@ -32,14 +32,14 @@ def color_from_histogram(hist):
 
 def rounded_rectangle(draw, box, radius, color):
     l, t, r, b = box
-    x = radius * 2
-    z = radius
-    draw.ellipse((l, t, l + x, t + x), color)
-    draw.ellipse((r - x, t, r, t + x), color)
-    draw.ellipse((l, b - x, l + x, b), color)
-    draw.ellipse((r - x, b - x, r, b), color)
-    draw.rectangle((l, t + z, r, b - z), color)
-    draw.rectangle((l + z, t, r - z, b), color)
+    d = radius * 2
+    draw.ellipse((l, t, l + d, t + d), color)
+    draw.ellipse((r - d, t, r, t + d), color)
+    draw.ellipse((l, b - d, l + d, b), color)
+    draw.ellipse((r - d, b - d, r, b), color)
+    d = radius
+    draw.rectangle((l, t + d, r, b - d), color)
+    draw.rectangle((l + d, t, r - d, b), color)
 
 class Quad(object):
     def __init__(self, model, box):
