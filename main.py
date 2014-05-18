@@ -1,4 +1,5 @@
 from PIL import Image, ImageDraw
+from collections import Counter
 import heapq
 import sys
 
@@ -42,9 +43,10 @@ def rounded_rectangle(draw, box, radius, color):
     draw.rectangle((l + d, t, r - d, b), color)
 
 class Quad(object):
-    def __init__(self, model, box):
+    def __init__(self, model, box, depth):
         self.model = model
         self.box = box
+        self.depth = depth
         hist = self.model.im.crop(self.box).histogram()
         self.color, self.error = color_from_histogram(hist)
         self.leaf = self.is_leaf()
@@ -59,29 +61,33 @@ class Quad(object):
         l, t, r, b = self.box
         lr = l + (r - l) / 2
         tb = t + (b - t) / 2
-        tl = Quad(self.model, (l, t, lr, tb))
-        tr = Quad(self.model, (lr, t, r, tb))
-        bl = Quad(self.model, (l, tb, lr, b))
-        br = Quad(self.model, (lr, tb, r, b))
+        depth = self.depth + 1
+        tl = Quad(self.model, (l, t, lr, tb), depth)
+        tr = Quad(self.model, (lr, t, r, tb), depth)
+        bl = Quad(self.model, (l, tb, lr, b), depth)
+        br = Quad(self.model, (lr, tb, r, b), depth)
         return (tl, tr, bl, br)
 
 class Model(object):
     def __init__(self, path):
         self.im = Image.open(path).convert('RGB')
         self.width, self.height = self.im.size
-        self.quads = []
-        quad = Quad(self, (0, 0, self.width, self.height))
+        self.heap = []
+        quad = Quad(self, (0, 0, self.width, self.height), 0)
         self.error_sum = quad.error * quad.area
         self.push(quad)
+    @property
+    def quads(self):
+        return [x[-1] for x in self.heap]
     def average_error(self):
         return self.error_sum / (self.width * self.height)
     def push(self, quad):
         score = -quad.error * (quad.area ** AREA_POWER)
-        heapq.heappush(self.quads, (quad.leaf, score, quad))
+        heapq.heappush(self.heap, (quad.leaf, score, quad))
     def pop(self):
-        return heapq.heappop(self.quads)
+        return heapq.heappop(self.heap)[-1]
     def split(self):
-        leaf, score, quad = self.pop()
+        quad = self.pop()
         self.error_sum -= quad.error * quad.area
         children = quad.split()
         for child in children:
@@ -93,7 +99,7 @@ class Model(object):
         im = Image.new('RGB', (self.width * m + dx, self.height * m + dy))
         draw = ImageDraw.Draw(im)
         draw.rectangle((0, 0, self.width * m, self.height * m), FILL_COLOR)
-        for leaf, score, quad in self.quads:
+        for quad in self.quads:
             l, t, r, b = quad.box
             box = (l * m + dx, t * m + dy, r * m - 1, b * m - 1)
             if MODE == MODE_ELLIPSE:
@@ -122,6 +128,16 @@ def main():
             previous = error
         model.split()
     model.render('output.png')
+    print '-' * 32
+    depth = Counter(x.depth for x in model.quads)
+    for key in sorted(depth):
+        value = depth[key]
+        n = 4 ** key
+        pct = 100.0 * value / n
+        print '%3d %8d %8d %8.2f%%' % (key, n, value, pct)
+    print '-' * 32
+    print '             %8d %8.2f%%' % (len(model.quads), 100)
+
 
 if __name__ == '__main__':
     main()
