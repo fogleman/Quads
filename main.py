@@ -1,4 +1,6 @@
 from PIL import Image, ImageDraw
+from functools import partial
+from itertools import product
 import heapq
 import sys
 
@@ -7,14 +9,16 @@ MODE_ELLIPSE = 2
 MODE_ROUNDED_RECTANGLE = 3
 
 MODE = MODE_RECTANGLE
-ITERATIONS = 1024
-LEAF_SIZE = 4
+ITERATIONS = 512
+LEAF_SIZE = 16
 PADDING = 1
 FILL_COLOR = (0, 0, 0)
 SAVE_FRAMES = False
 ERROR_RATE = 0.5
 AREA_POWER = 0.25
 OUTPUT_SCALE = 1
+
+SPLITS = list(product([0.3, 0.5, 0.7], repeat=2))
 
 def weighted_average(hist):
     total = sum(hist)
@@ -55,10 +59,10 @@ class Quad(object):
     def compute_area(self):
         l, t, r, b = self.box
         return (r - l) * (b - t)
-    def split(self):
+    def split(self, px, py):
         l, t, r, b = self.box
-        lr = l + (r - l) / 2
-        tb = t + (b - t) / 2
+        lr = l + int(round((r - l) * px))
+        tb = t + int(round((b - t) * py))
         tl = Quad(self.model, (l, t, lr, tb))
         tr = Quad(self.model, (lr, t, r, tb))
         bl = Quad(self.model, (l, tb, lr, b))
@@ -83,10 +87,14 @@ class Model(object):
     def split(self):
         leaf, score, quad = self.pop()
         self.error_sum -= quad.error * quad.area
-        children = quad.split()
+        px, py = min(SPLITS, key=partial(self.try_split, quad))
+        children = quad.split(px, py)
         for child in children:
             self.push(child)
             self.error_sum += child.error * child.area
+    def try_split(self, quad, split):
+        children = quad.split(*split)
+        return sum(child.error * child.area for child in children) / quad.area
     def render(self, path):
         m = OUTPUT_SCALE
         dx, dy = (PADDING, PADDING)
