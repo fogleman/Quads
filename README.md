@@ -6,7 +6,13 @@ The program targets an input image. The input image is split into four quadrants
 
 ### Animation
 
+The first animation shows the natural iterative process of the algorithm.
+
 ![Animation](http://i.imgur.com/UE2eOkx.gif)
+
+The second animation shows a top-down, breadth-first traversal of the final quadtree.
+
+![Animation](http://i.imgur.com/l3sv0In.gif)
 
 ### Samples
 
