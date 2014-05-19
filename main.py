@@ -51,6 +51,7 @@ class Quad(object):
         self.color, self.error = color_from_histogram(hist)
         self.leaf = self.is_leaf()
         self.area = self.compute_area()
+        self.children = []
     def is_leaf(self):
         l, t, r, b = self.box
         return int(r - l <= LEAF_SIZE or b - t <= LEAF_SIZE)
@@ -66,16 +67,26 @@ class Quad(object):
         tr = Quad(self.model, (lr, t, r, tb), depth)
         bl = Quad(self.model, (l, tb, lr, b), depth)
         br = Quad(self.model, (lr, tb, r, b), depth)
-        return (tl, tr, bl, br)
+        self.children = (tl, tr, bl, br)
+        return self.children
+    def get_leaf_nodes(self, max_depth=None):
+        if not self.children:
+            return [self]
+        if max_depth is not None and self.depth >= max_depth:
+            return [self]
+        result = []
+        for child in self.children:
+            result.extend(child.get_leaf_nodes(max_depth))
+        return result
 
 class Model(object):
     def __init__(self, path):
         self.im = Image.open(path).convert('RGB')
         self.width, self.height = self.im.size
         self.heap = []
-        quad = Quad(self, (0, 0, self.width, self.height), 0)
-        self.error_sum = quad.error * quad.area
-        self.push(quad)
+        self.root = Quad(self, (0, 0, self.width, self.height), 0)
+        self.error_sum = self.root.error * self.root.area
+        self.push(self.root)
     @property
     def quads(self):
         return [x[-1] for x in self.heap]
@@ -93,13 +104,13 @@ class Model(object):
         for child in children:
             self.push(child)
             self.error_sum += child.error * child.area
-    def render(self, path):
+    def render(self, path, max_depth=None):
         m = OUTPUT_SCALE
         dx, dy = (PADDING, PADDING)
         im = Image.new('RGB', (self.width * m + dx, self.height * m + dy))
         draw = ImageDraw.Draw(im)
         draw.rectangle((0, 0, self.width * m, self.height * m), FILL_COLOR)
-        for quad in self.quads:
+        for quad in self.root.get_leaf_nodes(max_depth):
             l, t, r, b = quad.box
             box = (l * m + dx, t * m + dy, r * m - 1, b * m - 1)
             if MODE == MODE_ELLIPSE:
@@ -137,7 +148,8 @@ def main():
         print '%3d %8d %8d %8.2f%%' % (key, n, value, pct)
     print '-' * 32
     print '             %8d %8.2f%%' % (len(model.quads), 100)
-
+    # for max_depth in range(max(depth.keys()) + 1):
+    #     model.render('out%d.png' % max_depth, max_depth)
 
 if __name__ == '__main__':
     main()
