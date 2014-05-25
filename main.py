@@ -20,8 +20,8 @@ OUTPUT_SCALE = 1
 
 def weighted_average(hist):
     total = sum(hist)
-    value = int(sum(i * x for i, x in enumerate(hist)) / total)  # cast to an int because of python 3
-    error = int(sum(x * (value - i) ** 2 for i, x in enumerate(hist)) / total) ** 0.5  # int cast python 3
+    value = sum(i * x for i, x in enumerate(hist)) // total  # cast to an int because of python 3
+    error = (sum(x * (value - i) ** 2 for i, x in enumerate(hist)) // total) ** 0.5
     return value, error
 
 
@@ -66,8 +66,8 @@ class Quad(object):
 
     def split(self):
         l, t, r, b = self.box
-        lr = int(l + (r - l) / 2)  # cast because of python 3 compatibility
-        tb = int(t + (b - t) / 2)  # cast because of python 3 compatibility
+        lr = l + (r - l) // 2  # cast because of python 3 compatibility
+        tb = t + (b - t) // 2  # cast because of python 3 compatibility
         depth = self.depth + 1
         tl = Quad(self.model, (l, t, lr, tb), depth)
         tr = Quad(self.model, (lr, t, r, tb), depth)
