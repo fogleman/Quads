@@ -1,3 +1,3 @@
 rm frames/*
 python main.py $1
-./gif.sh
+convert -loop 0 -delay 20 frames/*.png -delay 200 output.png output.gif
