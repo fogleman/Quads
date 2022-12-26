@@ -1,5 +1,5 @@
 from PIL import Image, ImageDraw
-from collections import Counter
+from collections import Counter, namedtuple
 import heapq
 import sys
 
@@ -19,8 +19,8 @@ OUTPUT_SCALE = 1
 
 def weighted_average(hist):
     total = sum(hist)
-    value = sum(i * x for i, x in enumerate(hist)) / total
-    error = sum(x * (value - i) ** 2 for i, x in enumerate(hist)) / total
+    value = sum(i * x for i, x in enumerate(hist)) // total
+    error = sum(x * (value - i) ** 2 for i, x in enumerate(hist)) // total
     error = error ** 0.5
     return value, error
 
@@ -42,16 +42,16 @@ def rounded_rectangle(draw, box, radius, color):
     draw.rectangle((l, t + d, r, b - d), color)
     draw.rectangle((l + d, t, r - d, b), color)
 
-class Quad(object):
-    def __init__(self, model, box, depth):
-        self.model = model
-        self.box = box
-        self.depth = depth
+class Quad(namedtuple('Quad', 'model box depth')):
+    def __new__(cls, model, box, depth):
+        self = super(Quad, cls).__new__(cls, model, box, depth)
         hist = self.model.im.crop(self.box).histogram()
         self.color, self.error = color_from_histogram(hist)
         self.leaf = self.is_leaf()
         self.area = self.compute_area()
         self.children = []
+        return self
+
     def is_leaf(self):
         l, t, r, b = self.box
         return int(r - l <= LEAF_SIZE or b - t <= LEAF_SIZE)
@@ -119,35 +119,35 @@ class Model(object):
                 radius = m * min((r - l), (b - t)) / 4
                 rounded_rectangle(draw, box, radius, quad.color)
             else:
-                draw.rectangle(box, quad.color)
+                draw.rectangle(box, tuple([int(i) for i in quad.color]))
         del draw
         im.save(path, 'PNG')
 
 def main():
     args = sys.argv[1:]
     if len(args) != 1:
-        print 'Usage: python main.py input_image'
+        print('Usage: python main.py input_image')
         return
     model = Model(args[0])
     previous = None
     for i in range(ITERATIONS):
         error = model.average_error()
         if previous is None or previous - error > ERROR_RATE:
-            print i, error
+            print(i, error)
             if SAVE_FRAMES:
                 model.render('frames/%06d.png' % i)
             previous = error
         model.split()
     model.render('output.png')
-    print '-' * 32
+    print('-' * 32)
     depth = Counter(x.depth for x in model.quads)
     for key in sorted(depth):
         value = depth[key]
         n = 4 ** key
         pct = 100.0 * value / n
-        print '%3d %8d %8d %8.2f%%' % (key, n, value, pct)
-    print '-' * 32
-    print '             %8d %8.2f%%' % (len(model.quads), 100)
+        print('%3d %8d %8d %8.2f%%' % (key, n, value, pct))
+    print('-' * 32)
+    print('             %8d %8.2f%%' % (len(model.quads), 100))
     # for max_depth in range(max(depth.keys()) + 1):
     #     model.render('out%d.png' % max_depth, max_depth)
 
